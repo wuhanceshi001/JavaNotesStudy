@@ -185,4 +185,90 @@ public boolean equalsIgnoreCase(String str) 忽略大小写，进行内容比较
    */
    ```
 
+3. 字符串的截取方法
+
+   ```java
+   /*
+   public String substring(int index) 截取从参数位置一直到字符串末位，返回新的字符串
+   public String substring(int begin, int end) 截取从begin开始，一直到end结束，中间的字符串。备注：包含左边不包含右边。
+   */
+   ```
+
+4. 字符串的转换方法
+
+   ```java
+   /*
+   public char[] toCharArray() 将当前字符串拆分成为字符数组作为返回值
+   public byte[] getBytes() 获取当前字符串底层的字节数组
+   public String replace(CharSequence oldString, CharSequence newString)
+   字符产的替换，将当前字符串中的oldString 替换成 newString
+   */
+   ```
+
+5. 切割字符串
+
+   ```java
+   /*
+   public String[] split(String regex) 按照参照的规则，将字符串切分为若干部分
+   注意事项：
+   split方法的额参数其实是一个正则表达式
+   用 . 切割  写作 \\.
+   */
+   ```
+
+### 3.static关键字
+
+1. 背景
+
+   * 对象有一些公有的属性
+
+   * 一旦使用了static关键字，name这样的内容就不在属于自己，而是属于类，所以凡是本类的对象，都共享同一份。
+
+     概述内存
+
+     ![02-静态static关键字概述](.\images\02-静态static关键字概述.png)
+
+2. 静态修饰成员方法和成员变量
+   1. 一旦使用了`static`修饰成员方法，那么这就成为了静态方法。静态方法属于类，不属于对象。
+      1. 如果没有stattic关键字，那么必须首先创建对象，然后通过对象才能使用它。
+      2. 如果有了static关键字，那么不需要创建对象，直接就能通过类名成来使用它
+   2. 无论是成员变量还是成员方法，如果有了static，都推荐使用类名称进行调用。
+      1. 静态变量：类名称.静态变量
+      2. 静态方法：类名称.静态方法()
+   3. 注意事项：
+      1. 静态不能直接访问非静态
+         * 原因：因为在内存当中是先有静态内容，后有非静态内容
+      2. 静态方法当中不能使用this关键字
+         * this代表当前对象，通过谁调用的方法，谁就是当前对象。
+
+3. 静态内存图
+
+   ![03-静态的内存图](.\images\03-静态的内存图.png)
+
+4. 静态代码块
+
+   ```java
+   /*
+   静态代码块格式：
+   public class 类名称{
+       static {
+   		// 静态代码块的内容
+       }
+   }
+   特点：当第一次用到本类时，静态代码块执行唯一的一次。
+   静态内容总是优先于非静态，所以静态代码块比构造方法先执行。
+   */
+   ```
+
    
+
+### 4.Arrays工具类
+
+* java.util.Arrays 是一个与数组相关的工具类，里面提供了大量静态方法，用来实现数组常见的操作
+  * public static String toString(数组) 将参数数组生成一个字符串（默认格式：[元素1, 元素2, 元素3, 元素4]）
+  * public static void sort(数组) 按照默认升序（从小到大）对数组的元素进行排序。
+    * 注意
+      * 数组元素如果是数值，sort默认按照升序从小到大
+      * 数组是字符串，sort默认是按照字母升序
+      * 如果是自定义类型，要实现Comparable 或者 Comparator接口的支持
+
