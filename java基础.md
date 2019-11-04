@@ -813,3 +813,1262 @@ public boolean equalsIgnoreCase(String str) 忽略大小写，进行内容比较
       2. 对于final的成员变量，**要么使用直接赋值**，要么通过**构造方法赋值**。二者选其一。
       3. **必须保证类当中所有重载的构造方法，都最终会对final的成员变量进行赋值。**
 
+### 11.权限修饰符
+
+1. Java中有四种权限修饰符
+
+   * public
+   * protected
+   * (default)
+     * (default)并不是关键字“default”，而是根本不写。
+   * private
+
+2. 权限关系
+
+   ```java
+   /*
+   Java中有四种权限修饰符：
+                       public  >   protected   >   (default)   >   private
+   同一个类(我自己)       YES         YES             YES             YES
+   同一个包(我邻居)       YES         YES             YES             NO
+   不同包子类(我儿子)     YES         YES             NO              NO
+   不同包非子类(陌生人)    YES         NO              NO              NO
+   */
+   ```
+
+### 12.内部类
+
+1. 概念
+   * 一个事物包含另一个事物，那么就是一个内部类包含另一个内部类
+   * 例如身体和心脏，汽车和发动机的关系
+2. 分类
+   * 成员内部类
+   * 局部内部类（包含匿名内部类）
+
+3. 成员内部类的定义
+
+   ```java
+   public class Body { // 外部类
+   
+       public class Heart { // 成员内部类
+   
+           // 内部类的方法
+           public void beat() {
+               System.out.println("心脏跳动：蹦蹦蹦！");
+               System.out.println("我叫：" + name); // 正确写法！
+           }
+   
+       }
+   
+       // 外部类的成员变量
+       private String name;
+   
+       // 外部类的方法
+       public void methodBody() {
+           System.out.println("外部类的方法");
+           new Heart().beat();
+       }
+   
+       public String getName() {
+           return name;
+       }
+   
+       public void setName(String name) {
+           this.name = name;
+       }
+   }
+   ```
+
+4. 成员内部类的使用
+
+   ```java
+   /*
+   如果一个事物的内部包含另一个事物，那么这就是一个类内部包含另一个类。
+   例如：身体和心脏的关系。又如：汽车和发动机的关系。
+   
+   分类：
+   1. 成员内部类
+   2. 局部内部类（包含匿名内部类）
+   
+   成员内部类的定义格式：
+   修饰符 class 外部类名称 {
+       修饰符 class 内部类名称 {
+           // ...
+       }
+       // ...
+   }
+   
+   注意：内用外，随意访问；外用内，需要内部类对象。
+   
+   ==========================
+   如何使用成员内部类？有两种方式：
+   1. 间接方式：在外部类的方法当中，使用内部类；然后main只是调用外部类的方法。
+   2. 直接方式，公式：
+   类名称 对象名 = new 类名称();
+   【外部类名称.内部类名称 对象名 = new 外部类名称().new 内部类名称();】
+    */
+   public class Demo01InnerClass {
+   
+       public static void main(String[] args) {
+           Body body = new Body(); // 外部类的对象
+           // 通过外部类的对象，调用外部类的方法，里面间接在使用内部类Heart
+           body.methodBody();
+           System.out.println("=====================");
+   
+           // 按照公式写：
+           Body.Heart heart = new Body().new Heart();
+           heart.beat();
+       }
+   
+   }
+   ```
+
+5. 如何访问外部类的成员变量
+
+   * 访问方式
+     * 外部类名称.this.外部类成员变量名
+
+   ```java
+   // 如果出现了重名现象，那么格式是：外部类名称.this.外部类成员变量名
+   public class Outer {
+   
+       int num = 10; // 外部类的成员变量
+   
+       public class Inner /*extends Object*/ {
+   
+           int num = 20; // 内部类的成员变量
+   
+           public void methodInner() {
+               int num = 30; // 内部类方法的局部变量
+               System.out.println(num); // 局部变量，就近原则
+               System.out.println(this.num); // 内部类的成员变量
+               System.out.println(Outer.this.num); // 外部类的成员变量
+           }
+   
+       }
+   
+   }
+   ```
+
+6. 局部内部类和权限修饰符（外部类、成员内部类，局部内部类）
+
+   ```java
+   /*
+   如果一个类是定义在一个方法内部的，那么这就是一个局部内部类。
+   “局部”：只有当前所属的方法才能使用它，出了这个方法外面就不能用了。
+   
+   定义格式：
+   修饰符 class 外部类名称 {
+       修饰符 返回值类型 外部类方法名称(参数列表) {
+           class 局部内部类名称 {
+               // ...
+           }
+       }
+   }
+   
+   小节一下类的权限修饰符：
+   public > protected > (default) > private
+   定义一个类的时候，权限修饰符规则：
+   1. 外部类：public / (default)
+   2. 成员内部类：public / protected / (default) / private
+   3. 局部内部类：什么都不能写
+    */
+   class Outer {
+   
+       public void methodOuter() {
+           class Inner { // 局部内部类
+               int num = 10;
+               public void methodInner() {
+                   System.out.println(num); // 10
+               }
+           }
+   
+           Inner inner = new Inner();
+           inner.methodInner();
+       }
+   
+   }
+   ```
+
+7. 局部内部类访问局部变量，需要保证局部变量有效final的（Java1.8+）
+
+   ```java
+   /*
+   局部内部类，如果希望访问所在方法的局部变量，那么这个局部变量必须是【有效final的】。
+   
+   备注：从Java 8+开始，只要局部变量事实不变，那么final关键字可以省略。
+   
+   原因：
+   1. new出来的对象在堆内存当中。
+   2. 局部变量是跟着方法走的，在栈内存当中。
+   3. 方法运行结束之后，立刻出栈，局部变量就会立刻消失。
+   4. 但是new出来的对象会在堆当中持续存在，直到垃圾回收消失。
+    */
+   public class MyOuter {
+   
+       public void methodOuter() {
+           int num = 10; // 所在方法的局部变量
+   
+           class MyInner {
+               public void methodInner() {
+                   System.out.println(num);
+               }
+           }
+       }
+   
+   }
+   ```
+
+8. 匿名内部类-匿名对象
+
+   ```java
+   /*
+   如果接口的实现类（或者是父类的子类）只需要使用唯一的一次，
+   那么这种情况下就可以省略掉该类的定义，而改为使用【匿名内部类】。
+   
+   匿名内部类的定义格式：
+   接口名称 对象名 = new 接口名称() {
+       // 覆盖重写所有抽象方法
+   };
+   
+   对格式“new 接口名称() {...}”进行解析：
+   1. new代表创建对象的动作
+   2. 接口名称就是匿名内部类需要实现哪个接口
+   3. {...}这才是匿名内部类的内容
+   
+   另外还要注意几点问题：
+   1. 匿名内部类，在【创建对象】的时候，只能使用唯一一次。
+   如果希望多次创建对象，而且类的内容一样的话，那么就需要使用单独定义的实现类了。
+   2. 匿名对象，在【调用方法】的时候，只能调用唯一一次。
+   如果希望同一个对象，调用多次方法，那么必须给对象起个名字。
+   3. 匿名内部类是省略了【实现类/子类名称】，但是匿名对象是省略了【对象名称】
+   强调：匿名内部类和匿名对象不是一回事！！！
+    */
+   public class DemoMain {
+   
+       public static void main(String[] args) {
+   //        MyInterface obj = new MyInterfaceImpl();
+   //        obj.method();
+   
+   //        MyInterface some = new MyInterface(); // 错误写法！
+   
+           // 使用匿名内部类，但不是匿名对象，对象名称就叫objA
+           MyInterface objA = new MyInterface() {
+               @Override
+               public void method1() {
+                   System.out.println("匿名内部类实现了方法！111-A");
+               }
+   
+               @Override
+               public void method2() {
+                   System.out.println("匿名内部类实现了方法！222-A");
+               }
+           };
+           objA.method1();
+           objA.method2();
+           System.out.println("=================");
+   
+           // 使用了匿名内部类，而且省略了对象名称，也是匿名对象
+           new MyInterface() {
+               @Override
+               public void method1() {
+                   System.out.println("匿名内部类实现了方法！111-B");
+               }
+   
+               @Override
+               public void method2() {
+                   System.out.println("匿名内部类实现了方法！222-B");
+               }
+           }.method1();
+           // 因为匿名对象无法调用第二次方法，所以需要再创建一个匿名内部类的匿名对象
+           new MyInterface() {
+               @Override
+               public void method1() {
+                   System.out.println("匿名内部类实现了方法！111-B");
+               }
+   
+               @Override
+               public void method2() {
+                   System.out.println("匿名内部类实现了方法！222-B");
+               }
+           }.method2();
+       }
+   
+   }
+   ```
+
+# 常用的API
+
+### 1.日期Date类
+
+1. 毫秒值
+   * 时间原点
+     * 1970年1月1日00:00:00（英国格林威治）
+     * 毫秒值和日期之间的转换
+   * 中国是东8区，要加8个小时的毫秒值（代码自动给加）
+2. 构造方法
+   1. Data()
+      * 获取当前时间对象
+   2. Date(long date)
+      * 传递毫秒值，把毫秒值转换为Date日期
+3. 成员方法
+   1. getTime()
+      * 获取当前**时间对象**的毫秒值
+      * 和System.currentTimeMillis()方法是获取当前时间的毫秒值
+
+### 2.DateFormat类和SimpleDateFormat
+
+1. 功能介绍
+
+   ```java
+   /*
+   java.text.DateFormat:是日期/时间格式化子类的抽象类
+       作用:
+           格式化（也就是日期 -> 文本）、解析（文本-> 日期）
+       成员方法:
+           String format(Date date)  按照指定的模式,把Date日期,格式化为符合模式的字符串
+           Date parse(String source)  把符合模式的字符串,解析为Date日期
+       DateFormat类是一个抽象类,无法直接创建对象使用,可以使用DateFormat类的子类
+   
+       java.text.SimpleDateFormat extends DateFormat
+   
+       构造方法:
+           SimpleDateFormat(String pattern)
+             用给定的模式和默认语言环境的日期格式符号构造 SimpleDateFormat。
+           参数:
+                String pattern:传递指定的模式
+           模式:区分大小写的
+               y   年
+               M   月
+               d   日
+               H   时
+               m   分
+               s   秒
+           写对应的模式,会把模式替换为对应的日期和时间
+               "yyyy-MM-dd HH:mm:ss"
+           注意:
+               模式中的字母不能更改,连接模式的符号可以改变
+                "yyyy年MM月dd日 HH时mm分ss秒"
+   */
+   ```
+
+2. 功能使用
+
+   ```java
+   public class Demo01DateFormat {
+       public static void main(String[] args) throws ParseException {
+           demo02();
+       }
+   
+       /*
+            使用DateFormat类中的方法parse,把文本解析为日期
+            使用步骤:
+               1.创建SimpleDateFormat对象,构造方法中传递指定的模式
+               2.调用SimpleDateFormat对象中的方法parse,把符合构造方法中模式的字符串,解析为Date日期
+               注意:
+                   public Date parse(String source) throws ParseException
+                   parse方法声明了一个异常叫ParseException
+                   如果字符串和构造方法的模式不一样,那么程序就会抛出此异常
+                   调用一个抛出了异常的方法,就必须的处理这个异常,要么throws继续抛出这个异常,要么try catch自己处理
+        */
+       private static void demo02() throws ParseException {
+           //1.创建SimpleDateFormat对象,构造方法中传递指定的模式
+           SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日 HH时mm分ss秒");
+           //2.调用SimpleDateFormat对象中的方法parse,把符合构造方法中模式的字符串,解析为Date日期
+           //Date parse(String source)  把符合模式的字符串,解析为Date日期
+           Date date = sdf.parse("2088年08月08日 15时51分54秒");
+           System.out.println(date);
+       }
+   
+       /*
+           使用DateFormat类中的方法format,把日期格式化为文本
+           使用步骤:
+               1.创建SimpleDateFormat对象,构造方法中传递指定的模式
+               2.调用SimpleDateFormat对象中的方法format,按照构造方法中指定的模式,把Date日期格式化为符合模式的字符串(文本)
+        */
+       private static void demo01() {
+           //1.创建SimpleDateFormat对象,构造方法中传递指定的模式
+           SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日 HH时mm分ss秒");
+           //2.调用SimpleDateFormat对象中的方法format,按照构造方法中指定的模式,把Date日期格式化为符合模式的字符串(文本)
+           //String format(Date date)  按照指定的模式,把Date日期,格式化为符合模式的字符串
+           Date date = new Date();
+           String d = sdf.format(date);
+           System.out.println(date);//Sun Aug 08 15:51:54 CST 2088
+           System.out.println(d);//2088年08月08日 15时51分54秒
+       }
+   }
+   ```
+
+### 3.Calendar类
+
+* 使用
+
+  ```java
+  package com.itheima.demo04.Calendar;
+  
+  import java.util.Calendar;
+  import java.util.Date;
+  
+  /*
+      Calendar类的常用成员方法:
+          public int get(int field)：返回给定日历字段的值。
+          public void set(int field, int value)：将给定的日历字段设置为给定值。
+          public abstract void add(int field, int amount)：根据日历的规则，为给定的日历字段添加或减去指定的时间量。
+          public Date getTime()：返回一个表示此Calendar时间值（从历元到现在的毫秒偏移量）的Date对象。
+      成员方法的参数:
+          int field:日历类的字段,可以使用Calendar类的静态成员变量获取
+              public static final int YEAR = 1;	年
+              public static final int MONTH = 2;	月
+              public static final int DATE = 5;	月中的某一天
+              public static final int DAY_OF_MONTH = 5;月中的某一天
+              public static final int HOUR = 10; 		时
+              public static final int MINUTE = 12; 	分
+              public static final int SECOND = 13;	秒
+   */
+  public class Demo02Calendar {
+      public static void main(String[] args) {
+          demo04();
+      }
+  
+      /*
+          public Date getTime()：返回一个表示此Calendar时间值（从历元到现在的毫秒偏移量）的Date对象。
+          把日历对象,转换为日期对象
+       */
+      private static void demo04() {
+          //使用getInstance方法获取Calendar对象
+          Calendar c = Calendar.getInstance();
+  
+          Date date = c.getTime();
+          System.out.println(date);
+      }
+  
+      /*
+          public abstract void add(int field, int amount)：根据日历的规则，为给定的日历字段添加或减去指定的时间量。
+          把指定的字段增加/减少指定的值
+          参数:
+              int field:传递指定的日历字段(YEAR,MONTH...)
+              int amount:增加/减少指定的值
+                  正数:增加
+                  负数:减少
+       */
+      private static void demo03() {
+          //使用getInstance方法获取Calendar对象
+          Calendar c = Calendar.getInstance();
+  
+          //把年增加2年
+          c.add(Calendar.YEAR,2);
+          //把月份减少3个月
+          c.add(Calendar.MONTH,-3);
+  
+  
+          int year = c.get(Calendar.YEAR);
+          System.out.println(year);
+  
+          int month = c.get(Calendar.MONTH);
+          System.out.println(month);//西方的月份0-11 东方:1-12
+  
+          //int date = c.get(Calendar.DAY_OF_MONTH);
+          int date = c.get(Calendar.DATE);
+          System.out.println(date);
+      }
+  
+      /*
+          public void set(int field, int value)：将给定的日历字段设置为给定值。
+          参数:
+              int field:传递指定的日历字段(YEAR,MONTH...)
+              int value:给指定字段设置的值
+       */
+      private static void demo02() {
+          //使用getInstance方法获取Calendar对象
+          Calendar c = Calendar.getInstance();
+  
+          //设置年为9999
+          c.set(Calendar.YEAR,9999);
+          //设置月为9月
+          c.set(Calendar.MONTH,9);
+          //设置日9日
+          c.set(Calendar.DATE,9);
+  
+          //同时设置年月日,可以使用set的重载方法
+          c.set(8888,8,8);
+  
+          int year = c.get(Calendar.YEAR);
+          System.out.println(year);
+  
+          int month = c.get(Calendar.MONTH);
+          System.out.println(month);//西方的月份0-11 东方:1-12
+  
+          int date = c.get(Calendar.DATE);
+          System.out.println(date);
+      }
+  
+      /*
+          public int get(int field)：返回给定日历字段的值。
+          参数:传递指定的日历字段(YEAR,MONTH...)
+          返回值:日历字段代表的具体的值
+       */
+      private static void demo01() {
+          //使用getInstance方法获取Calendar对象
+          Calendar c = Calendar.getInstance();
+          int year = c.get(Calendar.YEAR);
+          System.out.println(year);
+  
+          int month = c.get(Calendar.MONTH);
+          System.out.println(month);//西方的月份0-11 东方:1-12
+  
+          //int date = c.get(Calendar.DAY_OF_MONTH);
+          int date = c.get(Calendar.DATE);
+          System.out.println(date);
+      }
+  }
+  
+  ```
+
+### 4.System类
+
+* 基本方法
+
+  ```java
+  /*
+      java.lang.System类中提供了大量的静态方法，可以获取与系统相关的信息或系统级操作，在System类的API文档中，常用的方法有：
+          public static long currentTimeMillis()：返回以毫秒为单位的当前时间。
+          public static void arraycopy(Object src, int srcPos, Object dest, int destPos, int length)：将数组中指定的数据拷贝到另一个数组中。
+   */
+  ```
+
+* 案例
+
+  ```java
+  
+  public class Demo01System {
+      public static void main(String[] args) {
+          demo02();
+          StringBuilder sb = new StringBuilder();
+      }
+  
+      /*
+          public static void arraycopy(Object src, int srcPos, Object dest, int destPos, int length)：将数组中指定的数据拷贝到另一个数组中。
+          参数:
+              src - 源数组。
+              srcPos - 源数组中的起始位置(起始索引)。
+              dest - 目标数组。
+              destPos - 目标数据中的起始位置。
+              length - 要复制的数组元素的数量。
+          练习:
+              将src数组中前3个元素，复制到dest数组的前3个位置上
+                  复制元素前：
+                  src数组元素[1,2,3,4,5]，dest数组元素[6,7,8,9,10]
+                  复制元素后：
+                  src数组元素[1,2,3,4,5]，dest数组元素[1,2,3,9,10]
+       */
+      private static void demo02() {
+          //定义源数组
+          int[] src = {1,2,3,4,5};
+          //定义目标数组
+          int[] dest = {6,7,8,9,10};
+          System.out.println("复制前:"+ Arrays.toString(dest));
+          //使用System类中的arraycopy把源数组的前3个元素复制到目标数组的前3个位置上
+          System.arraycopy(src,0,dest,0,3);
+          System.out.println("复制后:"+ Arrays.toString(dest));
+      }
+  
+      /*
+          public static long currentTimeMillis()：返回以毫秒为单位的当前时间。
+          用来程序的效率
+          验证for循环打印数字1-9999所需要使用的时间（毫秒）
+       */
+      private static void demo01() {
+          //程序执行前,获取一次毫秒值
+          long s = System.currentTimeMillis();
+          //执行for循环
+          for (int i = 1; i <=9999 ; i++) {
+              System.out.println(i);
+          }
+          //程序执行后,获取一次毫秒值
+          long e = System.currentTimeMillis();
+          System.out.println("程序共耗时:"+(e-s)+"毫秒");//程序共耗时:106毫秒
+      }
+  }
+  
+  ```
+
+### 5.StringBuilder类
+
+1. 构造方法
+
+   * StringBuilder()
+   * StringBuilder(str)
+
+2. 成员方法
+
+   * StringBuilder的常用方法:
+
+     > public StringBuilder append(...)：添加任意类型数据的字符串形式，并返回当前对象自身。
+     >
+     > public String toString()：将当前StringBuilder对象转换为String对象。
+
+# 集合Collection
+
+### 1.Collection
+
+1. collection是一个抽象类，是List和Set的父类
+
+2. Collection中公有的方法
+
+   ```java
+   /*
+   java.util.Collection接口
+           所有单列集合的最顶层的接口,里边定义了所有单列集合共性的方法
+           任意的单列集合都可以使用Collection接口中的方法
+   
+   
+       共性的方法:
+         public boolean add(E e)：  把给定的对象添加到当前集合中 。
+         public void clear() :清空集合中所有的元素。
+         public boolean remove(E e): 把给定的对象在当前集合中删除。
+         public boolean contains(E e): 判断当前集合中是否包含给定的对象。
+         public boolean isEmpty(): 判断当前集合是否为空。
+         public int size(): 返回集合中元素的个数。
+         public Object[] toArray(): 把集合中的元素，存储到数组中。
+   */
+   ```
+
+3. 迭代器的简单介绍
+
+   ```java
+   /*
+   java.util.Iterator接口:迭代器(对集合进行遍历)
+       有两个常用的方法
+           boolean hasNext() 如果仍有元素可以迭代，则返回 true。
+               判断集合中还有没有下一个元素,有就返回true,没有就返回false
+           E next() 返回迭代的下一个元素。
+               取出集合中的下一个元素
+       Iterator迭代器,是一个接口,我们无法直接使用,需要使用Iterator接口的实现类对象,获取实现类的方式比较特殊
+       Collection接口中有一个方法,叫iterator(),这个方法返回的就是迭代器的实现类对象
+           Iterator<E> iterator() 返回在此 collection 的元素上进行迭代的迭代器。
+   
+       迭代器的使用步骤(重点):
+           1.使用集合中的方法iterator()获取迭代器的实现类对象,使用Iterator接口接收(多态)
+           2.使用Iterator接口中的方法hasNext判断还有没有下一个元素
+           3.使用Iterator接口中的方法next取出集合中的下一个元素
+   */
+   ```
+
+4. 增强for循环
+
+   ```java
+   /*
+   增强for循环:底层使用的也是迭代器,使用for循环的格式,简化了迭代器的书写
+       是JDK1.5之后出现的新特性
+       Collection<E>extends Iterable<E>:所有的单列集合都可以使用增强for
+       public interface Iterable<T>实现这个接口允许对象成为 "foreach" 语句的目标。
+   
+       增强for循环:用来遍历集合和数组
+   
+       格式:
+           for(集合/数组的数据类型 变量名: 集合名/数组名){
+               sout(变量名);
+           }
+   */
+   ```
+
+### 2.泛型
+
+1. 泛型是指的未知类型，泛型是没有继承概念的
+
+2. 使用泛型的好处
+
+   ```java
+   /*
+   创建集合对象,使用泛型
+           好处:
+               1.避免了类型转换的麻烦,存储的是什么类型,取出的就是什么类型
+               2.把运行期异常(代码运行之后会抛出的异常),提升到了编译期(写代码的时候会报错)
+            弊端:
+               泛型是什么类型,只能存储什么类型的数据
+   */
+   
+   /*
+   创建集合对象,不使用泛型
+           好处:
+               集合不使用泛型,默认的类型就是Object类型,可以存储任意类型的数据
+           弊端:
+               不安全,会引发异常
+           多态不能访问子类特有的方法，需要强制转换，会发生异常
+           编译看左边，使用子类特有的方法，编译都过不去
+   */
+   ```
+
+2. 使用泛型-创建一个含有泛型的类
+
+   ```java
+   /*
+       定义一个含有泛型的类,模拟ArrayList集合
+       泛型是一个未知的数据类型,当我们不确定什么什么数据类型的时候,可以使用泛型
+       泛型可以接收任意的数据类型,可以使用Integer,String,Student...
+       创建对象的时候确定泛型的数据类型
+    */
+   public class GenericClass<E> {
+       private E name;
+   
+       public E getName() {
+           return name;
+       }
+   
+       public void setName(E name) {
+           this.name = name;
+       }
+   }
+   
+   // =================================================================
+   
+   public class Demo02GenericClass {
+       public static void main(String[] args) {
+           //不写泛型默认为Object类型
+           GenericClass gc = new GenericClass();
+           gc.setName("只能是字符串");
+           Object obj = gc.getName();
+   
+           //创建GenericClass对象,泛型使用Integer类型
+           GenericClass<Integer> gc2 = new GenericClass<>();
+           gc2.setName(1);
+   
+           Integer name = gc2.getName();
+           System.out.println(name);
+   
+           //创建GenericClass对象,泛型使用String类型
+           GenericClass<String> gc3 = new GenericClass<>();
+           gc3.setName("小明");
+           String name1 = gc3.getName();
+           System.out.println(name1);
+       }
+   }
+   
+   ```
+
+3. 使用泛型-创建一个含有泛型的方法
+
+   ```java
+   /*
+       定义含有泛型的方法:泛型定义在方法的修饰符和返回值类型之间
+   
+       格式:
+           修饰符 <泛型> 返回值类型 方法名(参数列表(使用泛型)){
+               方法体;
+           }
+   
+       含有泛型的方法,在调用方法的时候确定泛型的数据类型
+       传递什么类型的参数,泛型就是什么类型
+    */
+   public class GenericMethod {
+       //定义一个含有泛型的方法
+       public <M> void method01(M m){
+           System.out.println(m);
+       }
+   
+       //定义一个含有泛型的静态方法
+       public static <S> void method02(S s){
+           System.out.println(s);
+       }
+   }
+   
+   // =============================================================
+   /*
+       测试含有泛型的方法
+    */
+   public class Demo03GenericMethod {
+       public static void main(String[] args) {
+           //创建GenericMethod对象
+           GenericMethod gm = new GenericMethod();
+   
+           /*
+               调用含有泛型的方法method01
+               传递什么类型,泛型就是什么类型
+            */
+           gm.method01(10);
+           gm.method01("abc");
+           gm.method01(8.8);
+           gm.method01(true);
+   
+           gm.method02("静态方法,不建议创建对象使用");
+   
+           //静态方法,通过类名.方法名(参数)可以直接使用
+           GenericMethod.method02("静态方法");
+           GenericMethod.method02(1);
+       }
+   }
+   
+   
+   ```
+
+4. 使用泛型-接口
+
+   ```java
+   /*
+       定义含有泛型的接口
+    */
+   public interface GenericInterface<I> {
+       public abstract void method(I i);
+   }
+   
+   // =========================================================
+   
+   /*
+       含有泛型的接口,第一种使用方式:定义接口的实现类,实现接口,指定接口的泛型
+       public interface Iterator<E> {
+           E next();
+       }
+       Scanner类实现了Iterator接口,并指定接口的泛型为String,所以重写的next方法泛型默认就是String
+       public final class Scanner implements Iterator<String>{
+           public String next() {}
+       }
+    */
+   public class GenericInterfaceImpl1 implements GenericInterface<String>{
+       @Override
+       public void method(String s) {
+           System.out.println(s);
+       }
+   }
+   
+   // =========================================================
+   
+   /*
+       含有泛型的接口第二种使用方式:接口使用什么泛型,实现类就使用什么泛型,类跟着接口走
+       就相当于定义了一个含有泛型的类,创建对象的时候确定泛型的类型
+       public interface List<E>{
+           boolean add(E e);
+           E get(int index);
+       }
+       public class ArrayList<E> implements List<E>{
+           public boolean add(E e) {}
+           public E get(int index) {}
+       }
+    */
+   public class GenericInterfaceImpl2<I> implements GenericInterface<I> {
+       @Override
+       public void method(I i) {
+           System.out.println(i);
+       }
+   }
+   
+   // =============================================================
+   /*
+       测试含有泛型的接口
+    */
+   public class Demo04GenericInterface {
+       public static void main(String[] args) {
+           //创建GenericInterfaceImpl1对象
+           GenericInterfaceImpl1 gi1 = new GenericInterfaceImpl1();
+           gi1.method("字符串");
+   
+           //创建GenericInterfaceImpl2对象
+           GenericInterfaceImpl2<Integer> gi2 = new GenericInterfaceImpl2<>();
+           gi2.method(10);
+   
+           GenericInterfaceImpl2<Double> gi3 = new GenericInterfaceImpl2<>();
+           gi3.method(8.8);
+       }
+   }
+   
+   ```
+
+5. 使用泛型-泛型通配符
+
+   ```java
+   import java.util.ArrayList;
+   import java.util.Collection;
+   
+   /*
+       泛型的上限限定: ? extends E  代表使用的泛型只能是E类型的子类/本身
+       泛型的下限限定: ? super E    代表使用的泛型只能是E类型的父类/本身
+    */
+   public class Demo06Generic {
+       public static void main(String[] args) {
+           Collection<Integer> list1 = new ArrayList<Integer>();
+           Collection<String> list2 = new ArrayList<String>();
+           Collection<Number> list3 = new ArrayList<Number>();
+           Collection<Object> list4 = new ArrayList<Object>();
+   
+           getElement1(list1);
+           //getElement1(list2);//报错
+           getElement1(list3);
+           //getElement1(list4);//报错
+   
+           //getElement2(list1);//报错
+           //getElement2(list2);//报错
+           getElement2(list3);
+           getElement2(list4);
+   
+           /*
+               类与类之间的继承关系
+               Integer extends Number extends Object
+               String extends Object
+            */
+   
+       }
+       // 泛型的上限：此时的泛型?，必须是Number类型或者Number类型的子类
+       public static void getElement1(Collection<? extends Number> coll){}
+       // 泛型的下限：此时的泛型?，必须是Number类型或者Number类型的父类
+       public static void getElement2(Collection<? super Number> coll){}
+   }
+   ```
+
+### 3.数据结构
+
+1. 栈
+   * 先进后出
+2. 队列
+   * 先进先出
+   * 查询比修改快
+3. 链表
+   * 单向链表和双向链表
+   * 修改速度快
+   * 查询速度慢
+4. 二叉树
+   * 查询速度超快
+
+### 3 常见的数据结构
+
+数据存储的常用结构有：栈、队列、数组、链表和红黑树。我们分别来了解一下：
+
+#### 栈
+
+- **栈**：**stack**,又称堆栈，它是运算受限的线性表，其限制是仅允许在标的一端进行插入和删除操作，不允许在其他任何位置进行添加、查找、删除等操作。
+
+简单的说：采用该结构的集合，对元素的存取有如下的特点
+
+- 先进后出（即，存进去的元素，要在后它后面的元素依次取出后，才能取出该元素）。例如，子弹压进弹夹，先压进去的子弹在下面，后压进去的子弹在上面，当开枪时，先弹出上面的子弹，然后才能弹出下面的子弹。
+
+- 栈的入口、出口的都是栈的顶端位置。
+
+  ![](F:/java%E4%B8%8B%E8%BD%BD/00.%E8%AE%B2%E4%B9%89+%E7%AC%94%E8%AE%B0+%E8%B5%84%E6%96%99/Java%E5%9F%BA%E7%A1%80/06.%E4%BC%9A%E5%91%98%E7%89%88(2.0)-%E5%B0%B1%E4%B8%9A%E8%AF%BE(2.0)-%E9%9B%86%E5%90%88/14.%E3%80%90List%E3%80%81Set%E3%80%91/14.%E3%80%90List%E3%80%81Set%E3%80%91-%E7%AC%94%E8%AE%B0/%E5%B0%B1%E4%B8%9A%E7%8F%AD-day03-List%E3%80%81Set%E3%80%81%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E3%80%81Collections/img/%E5%A0%86%E6%A0%88.png)
+
+这里两个名词需要注意：
+
+- **压栈**：就是存元素。即，把元素存储到栈的顶端位置，栈中已有元素依次向栈底方向移动一个位置。
+- **弹栈**：就是取元素。即，把栈的顶端位置元素取出，栈中已有元素依次向栈顶方向移动一个位置。
+
+#### 队列
+
+- **队列**：**queue**,简称队，它同堆栈一样，也是一种运算受限的线性表，其限制是仅允许在表的一端进行插入，而在表的另一端进行删除。
+
+简单的说，采用该结构的集合，对元素的存取有如下的特点：
+
+- 先进先出（即，存进去的元素，要在后它前面的元素依次取出后，才能取出该元素）。例如，小火车过山洞，车头先进去，车尾后进去；车头先出来，车尾后出来。
+- 队列的入口、出口各占一侧。例如，下图中的左侧为入口，右侧为出口。
+
+![](F:/java%E4%B8%8B%E8%BD%BD/00.%E8%AE%B2%E4%B9%89+%E7%AC%94%E8%AE%B0+%E8%B5%84%E6%96%99/Java%E5%9F%BA%E7%A1%80/06.%E4%BC%9A%E5%91%98%E7%89%88(2.0)-%E5%B0%B1%E4%B8%9A%E8%AF%BE(2.0)-%E9%9B%86%E5%90%88/14.%E3%80%90List%E3%80%81Set%E3%80%91/14.%E3%80%90List%E3%80%81Set%E3%80%91-%E7%AC%94%E8%AE%B0/%E5%B0%B1%E4%B8%9A%E7%8F%AD-day03-List%E3%80%81Set%E3%80%81%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E3%80%81Collections/img/%E9%98%9F%E5%88%97%E5%9B%BE.bmp)
+
+#### 数组
+
+- **数组**:**Array**,是有序的元素序列，数组是在内存中开辟一段连续的空间，并在此空间存放元素。就像是一排出租屋，有100个房间，从001到100每个房间都有固定编号，通过编号就可以快速找到租房子的人。
+
+简单的说,采用该结构的集合，对元素的存取有如下的特点：
+
+- 查找元素快：通过索引，可以快速访问指定位置的元素
+
+  ![](F:/java%E4%B8%8B%E8%BD%BD/00.%E8%AE%B2%E4%B9%89+%E7%AC%94%E8%AE%B0+%E8%B5%84%E6%96%99/Java%E5%9F%BA%E7%A1%80/06.%E4%BC%9A%E5%91%98%E7%89%88(2.0)-%E5%B0%B1%E4%B8%9A%E8%AF%BE(2.0)-%E9%9B%86%E5%90%88/14.%E3%80%90List%E3%80%81Set%E3%80%91/14.%E3%80%90List%E3%80%81Set%E3%80%91-%E7%AC%94%E8%AE%B0/%E5%B0%B1%E4%B8%9A%E7%8F%AD-day03-List%E3%80%81Set%E3%80%81%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E3%80%81Collections/img/%E6%95%B0%E7%BB%84%E6%9F%A5%E8%AF%A2%E5%BF%AB.png)
+
+- 增删元素慢
+
+  - **指定索引位置增加元素**：需要创建一个新数组，将指定新元素存储在指定索引位置，再把原数组元素根据索引，复制到新数组对应索引的位置。如下图![](F:/java%E4%B8%8B%E8%BD%BD/00.%E8%AE%B2%E4%B9%89+%E7%AC%94%E8%AE%B0+%E8%B5%84%E6%96%99/Java%E5%9F%BA%E7%A1%80/06.%E4%BC%9A%E5%91%98%E7%89%88(2.0)-%E5%B0%B1%E4%B8%9A%E8%AF%BE(2.0)-%E9%9B%86%E5%90%88/14.%E3%80%90List%E3%80%81Set%E3%80%91/14.%E3%80%90List%E3%80%81Set%E3%80%91-%E7%AC%94%E8%AE%B0/%E5%B0%B1%E4%B8%9A%E7%8F%AD-day03-List%E3%80%81Set%E3%80%81%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E3%80%81Collections/img/%E6%95%B0%E7%BB%84%E6%B7%BB%E5%8A%A0.png)
+  - **指定索引位置删除元素：**需要创建一个新数组，把原数组元素根据索引，复制到新数组对应索引的位置，原数组中指定索引位置元素不复制到新数组中。如下图![](F:/java%E4%B8%8B%E8%BD%BD/00.%E8%AE%B2%E4%B9%89+%E7%AC%94%E8%AE%B0+%E8%B5%84%E6%96%99/Java%E5%9F%BA%E7%A1%80/06.%E4%BC%9A%E5%91%98%E7%89%88(2.0)-%E5%B0%B1%E4%B8%9A%E8%AF%BE(2.0)-%E9%9B%86%E5%90%88/14.%E3%80%90List%E3%80%81Set%E3%80%91/14.%E3%80%90List%E3%80%81Set%E3%80%91-%E7%AC%94%E8%AE%B0/%E5%B0%B1%E4%B8%9A%E7%8F%AD-day03-List%E3%80%81Set%E3%80%81%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E3%80%81Collections/img/%E6%95%B0%E7%BB%84%E5%88%A0%E9%99%A4.png)
+
+
+
+#### 链表
+
+- **链表**:**linked list**,由一系列结点node（链表中每一个元素称为结点）组成，结点可以在运行时i动态生成。每个结点包括两个部分：一个是存储数据元素的数据域，另一个是存储下一个结点地址的指针域。我们常说的链表结构有单向链表与双向链表，那么这里给大家介绍的是**单向链表**。
+
+  ![](F:/java%E4%B8%8B%E8%BD%BD/00.%E8%AE%B2%E4%B9%89+%E7%AC%94%E8%AE%B0+%E8%B5%84%E6%96%99/Java%E5%9F%BA%E7%A1%80/06.%E4%BC%9A%E5%91%98%E7%89%88(2.0)-%E5%B0%B1%E4%B8%9A%E8%AF%BE(2.0)-%E9%9B%86%E5%90%88/14.%E3%80%90List%E3%80%81Set%E3%80%91/14.%E3%80%90List%E3%80%81Set%E3%80%91-%E7%AC%94%E8%AE%B0/%E5%B0%B1%E4%B8%9A%E7%8F%AD-day03-List%E3%80%81Set%E3%80%81%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E3%80%81Collections/img/%E5%8D%95%E9%93%BE%E8%A1%A8%E7%BB%93%E6%9E%84%E7%89%B9%E7%82%B9.png)
+
+简单的说，采用该结构的集合，对元素的存取有如下的特点：
+
+- 多个结点之间，通过地址进行连接。例如，多个人手拉手，每个人使用自己的右手拉住下个人的左手，依次类推，这样多个人就连在一起了。
+
+  ![](F:/java%E4%B8%8B%E8%BD%BD/00.%E8%AE%B2%E4%B9%89+%E7%AC%94%E8%AE%B0+%E8%B5%84%E6%96%99/Java%E5%9F%BA%E7%A1%80/06.%E4%BC%9A%E5%91%98%E7%89%88(2.0)-%E5%B0%B1%E4%B8%9A%E8%AF%BE(2.0)-%E9%9B%86%E5%90%88/14.%E3%80%90List%E3%80%81Set%E3%80%91/14.%E3%80%90List%E3%80%81Set%E3%80%91-%E7%AC%94%E8%AE%B0/%E5%B0%B1%E4%B8%9A%E7%8F%AD-day03-List%E3%80%81Set%E3%80%81%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E3%80%81Collections/img/%E5%8D%95%E9%93%BE%E8%A1%A8%E7%BB%93%E6%9E%84.png)
+
+- 查找元素慢：想查找某个元素，需要通过连接的节点，依次向后查找指定元素
+
+- 增删元素快：
+
+  - 增加元素：只需要修改连接下个元素的地址即可。
+
+    ![](F:/java%E4%B8%8B%E8%BD%BD/00.%E8%AE%B2%E4%B9%89+%E7%AC%94%E8%AE%B0+%E8%B5%84%E6%96%99/Java%E5%9F%BA%E7%A1%80/06.%E4%BC%9A%E5%91%98%E7%89%88(2.0)-%E5%B0%B1%E4%B8%9A%E8%AF%BE(2.0)-%E9%9B%86%E5%90%88/14.%E3%80%90List%E3%80%81Set%E3%80%91/14.%E3%80%90List%E3%80%81Set%E3%80%91-%E7%AC%94%E8%AE%B0/%E5%B0%B1%E4%B8%9A%E7%8F%AD-day03-List%E3%80%81Set%E3%80%81%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E3%80%81Collections/img/%E5%A2%9E%E5%8A%A0%E7%BB%93%E7%82%B9.png)
+
+  - 删除元素：只需要修改连接下个元素的地址即可。
+
+    ![](F:/java%E4%B8%8B%E8%BD%BD/00.%E8%AE%B2%E4%B9%89+%E7%AC%94%E8%AE%B0+%E8%B5%84%E6%96%99/Java%E5%9F%BA%E7%A1%80/06.%E4%BC%9A%E5%91%98%E7%89%88(2.0)-%E5%B0%B1%E4%B8%9A%E8%AF%BE(2.0)-%E9%9B%86%E5%90%88/14.%E3%80%90List%E3%80%81Set%E3%80%91/14.%E3%80%90List%E3%80%81Set%E3%80%91-%E7%AC%94%E8%AE%B0/%E5%B0%B1%E4%B8%9A%E7%8F%AD-day03-List%E3%80%81Set%E3%80%81%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E3%80%81Collections/img/%E5%88%A0%E9%99%A4%E7%BB%93%E7%82%B9.bmp)
+
+#### 红黑树
+
+- **二叉树**：**binary tree** ,是每个结点不超过2的有序**树（tree）** 。
+
+简单的理解，就是一种类似于我们生活中树的结构，只不过每个结点上都最多只能有两个子结点。
+
+二叉树是每个节点最多有两个子树的树结构。顶上的叫根结点，两边被称作“左子树”和“右子树”。
+
+如图：
+
+![](F:/java%E4%B8%8B%E8%BD%BD/00.%E8%AE%B2%E4%B9%89+%E7%AC%94%E8%AE%B0+%E8%B5%84%E6%96%99/Java%E5%9F%BA%E7%A1%80/06.%E4%BC%9A%E5%91%98%E7%89%88(2.0)-%E5%B0%B1%E4%B8%9A%E8%AF%BE(2.0)-%E9%9B%86%E5%90%88/14.%E3%80%90List%E3%80%81Set%E3%80%91/14.%E3%80%90List%E3%80%81Set%E3%80%91-%E7%AC%94%E8%AE%B0/%E5%B0%B1%E4%B8%9A%E7%8F%AD-day03-List%E3%80%81Set%E3%80%81%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E3%80%81Collections/img/%E4%BA%8C%E5%8F%89%E6%A0%91.bmp)
+
+我们要说的是二叉树的一种比较有意思的叫做**红黑树**，红黑树本身就是一颗二叉查找树，将节点插入后，该树仍然是一颗二叉查找树。也就意味着，树的键值仍然是有序的。
+
+红黑树的约束:
+
+1. 节点可以是红色的或者黑色的
+
+2. 根节点是黑色的
+
+3. 叶子节点(特指空节点)是黑色的
+4. 每个红色节点的子节点都是黑色的
+5. 任何一个节点到其每一个叶子节点的所有路径上黑色节点数相同
+
+红黑树的特点:
+
+​	速度特别快,趋近平衡树,查找叶子元素最少和最多次数不多于二倍
+
+# List
+
+### 1.ArrayList
+
+* 底层是一个数组结构，查询快，增删慢
+
+* java.util.List接口 extends Collection接口
+
+*  List接口的特点:
+
+  * 有序的集合,存储元素和取出元素的顺序是一致的(存储123 取出123)
+  * 有索引,包含了一些带索引的方法
+  * 允许存储重复的元素
+
+      List接口中带索引的方法(特有)
+          - public void add(int index, E element): 将指定的元素，添加到该集合中的指定位置上。
+          - public E get(int index):返回集合中指定位置的元素。
+          - public E remove(int index): 移除列表中指定位置的元素, 返回的是被移除的元素。
+          - public E set(int index, E element):用指定元素替换集合中指定位置的元素,返回值的更新前的元素。
+      注意:
+          操作索引的时候,一定要防止索引越界异常
+          IndexOutOfBoundsException:索引越界异常,集合会报
+          ArrayIndexOutOfBoundsException:数组索引越界异常
+          StringIndexOutOfBoundsException:字符串索引越界异常
+
+```java
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+/*
+    java.util.List接口 extends Collection接口
+    List接口的特点:
+        1.有序的集合,存储元素和取出元素的顺序是一致的(存储123 取出123)
+        2.有索引,包含了一些带索引的方法
+        3.允许存储重复的元素
+
+    List接口中带索引的方法(特有)
+        - public void add(int index, E element): 将指定的元素，添加到该集合中的指定位置上。
+        - public E get(int index):返回集合中指定位置的元素。
+        - public E remove(int index): 移除列表中指定位置的元素, 返回的是被移除的元素。
+        - public E set(int index, E element):用指定元素替换集合中指定位置的元素,返回值的更新前的元素。
+    注意:
+        操作索引的时候,一定要防止索引越界异常
+        IndexOutOfBoundsException:索引越界异常,集合会报
+        ArrayIndexOutOfBoundsException:数组索引越界异常
+        StringIndexOutOfBoundsException:字符串索引越界异常
+ */
+public class Demo01List {
+    public static void main(String[] args) {
+        //创建一个List集合对象,多态
+        List<String> list = new ArrayList<>();
+        //使用add方法往集合中添加元素
+        list.add("a");
+        list.add("b");
+        list.add("c");
+        list.add("d");
+        list.add("a");
+        //打印集合
+        System.out.println(list);//[a, b, c, d, a]  不是地址重写了toString
+
+        //public void add(int index, E element): 将指定的元素，添加到该集合中的指定位置上。
+        //在c和d之间添加一个itheima
+        list.add(3,"itheima");//[a, b, c, itheima, d, a]
+        System.out.println(list);
+
+        //public E remove(int index): 移除列表中指定位置的元素, 返回的是被移除的元素。
+        //移除元素
+        String removeE = list.remove(2);
+        System.out.println("被移除的元素:"+removeE);//被移除的元素:c
+        System.out.println(list);//[a, b, itheima, d, a]
+
+        //public E set(int index, E element):用指定元素替换集合中指定位置的元素,返回值的更新前的元素。
+        //把最后一个a,替换为A
+        String setE = list.set(4, "A");
+        System.out.println("被替换的元素:"+setE);//被替换的元素:a
+        System.out.println(list);//[a, b, itheima, d, A]
+
+        //List集合遍历有3种方式
+        //使用普通的for循环
+        for(int i=0; i<list.size(); i++){
+            //public E get(int index):返回集合中指定位置的元素。
+            String s = list.get(i);
+            System.out.println(s);
+        }
+        System.out.println("-----------------");
+        //使用迭代器
+        Iterator<String> it = list.iterator();
+        while(it.hasNext()){
+            String s = it.next();
+            System.out.println(s);
+        }
+        System.out.println("-----------------");
+        //使用增强for
+        for (String s : list) {
+            System.out.println(s);
+        }
+
+        String r = list.get(5);//IndexOutOfBoundsException: Index 5 out-of-bounds for length 5
+        System.out.println(r);
+
+    }
+}
+```
+
+### 2.LinkedList
+
+* java.util.LinkedList集合 implements List接口
+* LinkedList集合的特点:
+  * 底层是一个链表结构:查询慢,增删快
+  * 里边包含了大量操作首尾元素的方法
+  * 注意:使用LinkedList集合特有的方法,不能使用多态
+
+```
+    - public void addFirst(E e):将指定元素插入此列表的开头。
+    - public void addLast(E e):将指定元素添加到此列表的结尾。
+    - public void push(E e):将元素推入此列表所表示的堆栈。
+
+    - public E getFirst():返回此列表的第一个元素。
+    - public E getLast():返回此列表的最后一个元素。
+
+    - public E removeFirst():移除并返回此列表的第一个元素。
+    - public E removeLast():移除并返回此列表的最后一个元素。
+    - public E pop():从此列表所表示的堆栈处弹出一个元素。
+
+    - public boolean isEmpty()：如果列表不包含元素，则返回true。
+```
+```java
+import java.util.LinkedList;
+
+/*
+    java.util.LinkedList集合 implements List接口
+    LinkedList集合的特点:
+        1.底层是一个链表结构:查询慢,增删快
+        2.里边包含了大量操作首尾元素的方法
+        注意:使用LinkedList集合特有的方法,不能使用多态
+
+        - public void addFirst(E e):将指定元素插入此列表的开头。
+        - public void addLast(E e):将指定元素添加到此列表的结尾。
+        - public void push(E e):将元素推入此列表所表示的堆栈。
+
+        - public E getFirst():返回此列表的第一个元素。
+        - public E getLast():返回此列表的最后一个元素。
+
+        - public E removeFirst():移除并返回此列表的第一个元素。
+        - public E removeLast():移除并返回此列表的最后一个元素。
+        - public E pop():从此列表所表示的堆栈处弹出一个元素。
+
+        - public boolean isEmpty()：如果列表不包含元素，则返回true。
+
+ */
+public class Demo02LinkedList {
+    public static void main(String[] args) {
+        show03();
+    }
+
+    /*
+        - public E removeFirst():移除并返回此列表的第一个元素。
+        - public E removeLast():移除并返回此列表的最后一个元素。
+        - public E pop():从此列表所表示的堆栈处弹出一个元素。此方法相当于 removeFirst
+     */
+    private static void show03() {
+        //创建LinkedList集合对象
+        LinkedList<String> linked = new LinkedList<>();
+        //使用add方法往集合中添加元素
+        linked.add("a");
+        linked.add("b");
+        linked.add("c");
+        System.out.println(linked);//[a, b, c]
+
+        //String first = linked.removeFirst();
+        String first = linked.pop();
+        System.out.println("被移除的第一个元素:"+first);
+        String last = linked.removeLast();
+        System.out.println("被移除的最后一个元素:"+last);
+        System.out.println(linked);//[b]
+    }
+
+    /*
+        - public E getFirst():返回此列表的第一个元素。
+        - public E getLast():返回此列表的最后一个元素。
+     */
+    private static void show02() {
+        //创建LinkedList集合对象
+        LinkedList<String> linked = new LinkedList<>();
+        //使用add方法往集合中添加元素
+        linked.add("a");
+        linked.add("b");
+        linked.add("c");
+
+        //linked.clear();//清空集合中的元素 在获取集合中的元素会抛出NoSuchElementException
+
+        //public boolean isEmpty()：如果列表不包含元素，则返回true。
+        if(!linked.isEmpty()){
+            String first = linked.getFirst();
+            System.out.println(first);//a
+            String last = linked.getLast();
+            System.out.println(last);//c
+        }
+    }
+
+    /*
+        - public void addFirst(E e):将指定元素插入此列表的开头。
+        - public void addLast(E e):将指定元素添加到此列表的结尾。
+        - public void push(E e):将元素推入此列表所表示的堆栈。此方法等效于 addFirst(E)。
+     */
+    private static void show01() {
+        //创建LinkedList集合对象
+        LinkedList<String> linked = new LinkedList<>();
+        //使用add方法往集合中添加元素
+        linked.add("a");
+        linked.add("b");
+        linked.add("c");
+        System.out.println(linked);//[a, b, c]
+
+        //public void addFirst(E e):将指定元素插入此列表的开头。
+        //linked.addFirst("www");
+        linked.push("www");
+        System.out.println(linked);//[www, a, b, c]
+
+        //public void addLast(E e):将指定元素添加到此列表的结尾。此方法等效于 add()
+        linked.addLast("com");
+        System.out.println(linked);//[www, a, b, c, com]
+    }
+}
+```
+
+# Set
+
+1. java.util.Set接口 extends Collection接口
+2.  Set接口的特点:
+   - 不允许存储重复的元素
+   - 没有索引,没有带索引的方法,也不能使用普通的for循环遍历
+
+### 1.HashSet
+
+1. java.util.HashSet集合 implements Set接口
+2. HashSet特点:
+   * 不允许存储重复的元素
+   * 没有索引,没有带索引的方法,也不能使用普通的for循环遍历
+   * 是一个无序的集合,存储元素和取出元素的顺序有可能不一致
+   * 底层是一个哈希表结构(查询的速度非常的快
+
