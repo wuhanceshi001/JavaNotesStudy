@@ -2066,9 +2066,397 @@ public class Demo02LinkedList {
 ### 1.HashSet
 
 1. java.util.HashSet集合 implements Set接口
-2. HashSet特点:
+2. **HashSet**特点:
    * 不允许存储重复的元素
    * 没有索引,没有带索引的方法,也不能使用普通的for循环遍历
    * 是一个无序的集合,存储元素和取出元素的顺序有可能不一致
    * 底层是一个哈希表结构(查询的速度非常的快
 
+### 2.哈希值
+
+1. 哈希值:是一个十进制的整数,由系统随机给出
+
+   * 就是对象的地址值,是一个**逻辑地址**,是模拟出来得到地址,**不是数据实际存储的物理地址**
+
+     ```java
+     /*
+     在Object类有一个方法,可以获取对象的哈希值
+         int hashCode() 返回该对象的哈希码值。
+         hashCode方法的源码:
+             public native int hashCode();
+             native:代表该方法调用的是本地操作系统的方法
+     */
+     ```
+
+2. 重写Object类的hash值
+3. 特殊
+   * System.out.println("重地".hashCode());//1179395
+   * System.out.println("通话".hashCode());//1179395
+
+4. **自定义hashset元素类，重写hashcode和equals方法**
+
+   ```java
+   /*
+   HashSet存储自定义类型元素
+   
+       set集合报错元素唯一:
+           存储的元素(String,Integer,...Student,Person...),必须重写hashCode方法和equals方法
+   
+       要求:
+           同名同年龄的人,视为同一个人,只能存储一次
+   */
+   ```
+
+   ```java
+   package com.Api.SetDemo;
+   
+   import java.util.Objects;
+   
+   public class Person {
+       private String name;
+       private int age;
+   
+       @Override
+       public String toString() {
+           return "Person{" +
+                   "name='" + name + '\'' +
+                   ", age=" + age +
+                   '}';
+       }
+   
+       public Person() {
+       }
+   
+       public Person(String name, int age) {
+           this.name = name;
+           this.age = age;
+       }
+   
+       @Override
+       public boolean equals(Object o) {
+           if (this == o) return true;
+           if (o == null || getClass() != o.getClass()) return false;
+           Person person = (Person) o;
+           return age == person.age &&
+                   Objects.equals(name, person.name);
+       }
+   
+       @Override
+       public int hashCode() {
+   
+           return Objects.hash(name, age);
+       }
+   }
+   // ==================================================================
+   
+   import java.util.HashSet;
+   
+   public class HashDemo {
+       public static void main(String[] args) {
+           Person p1 = new Person("小明", 18);
+           Person p2 = new Person("小明", 18);
+           Person p3 = new Person("小宏", 18);
+   
+           HashSet<Person> peopleHashSet = new HashSet<>();
+           peopleHashSet.add(p1);
+           peopleHashSet.add(p2);
+           peopleHashSet.add(p3);
+   
+           for (Person person : peopleHashSet) {
+               System.out.println(person);
+           }
+       }
+   }
+   
+   ```
+
+3.**LinkedHashSet**
+
+* 特点：
+  * 底层是一个哈希表(数组+链表/红黑树)+链表:多了一条链表(记录元素的存储顺序),保证元素有序
+
+### 3.可变参数
+
+1. 可变参数的使用前提
+   * 当方法的参数列表数据类型已经确定,但是参数的个数不确定,就可以使用可变参数.
+2. 可变参数的使用
+   * 修饰符 返回值类型 方法名(数据类型...变量名){}
+3. 可变参数使用的原理
+   1. 可变参数底层就是一个数组,根据传递参数个数不同,会创建不同长度的数组,来存储这些参数
+   2. 传递的参数个数,可以是0个(不传递),1,2...多个
+4. 可变参数的使用注意事项
+   1. 一个方法的参数列表,只能有一个可变参数
+   2. 如果方法的参数有多个,那么可变参数必须写在参数列表的末尾
+
+```java
+package com.itheima.demo04.VarArgs;
+/*
+    可变参数:是JDK1.5之后出现的新特性
+    使用前提:
+        当方法的参数列表数据类型已经确定,但是参数的个数不确定,就可以使用可变参数.
+    使用格式:定义方法时使用
+        修饰符 返回值类型 方法名(数据类型...变量名){}
+    可变参数的原理:
+        可变参数底层就是一个数组,根据传递参数个数不同,会创建不同长度的数组,来存储这些参数
+        传递的参数个数,可以是0个(不传递),1,2...多个
+
+ */
+public class Demo01VarArgs {
+    public static void main(String[] args) {
+        //int i = add();
+        //int i = add(10);
+        int i = add(10,20);
+        //int i = add(10,20,30,40,50,60,70,80,90,100);
+        System.out.println(i);
+
+        method("abc",5.5,10,1,2,3,4);
+    }
+
+    /*
+        可变参数的注意事项
+            1.一个方法的参数列表,只能有一个可变参数
+            2.如果方法的参数有多个,那么可变参数必须写在参数列表的末尾
+     */
+    /*public static void method(int...a,String...b){
+
+    }*/
+
+    /*public static void method(String b,double c,int d,int...a){
+    }*/
+
+    //可变参数的特殊(终极)写法
+    public static void method(Object...obj){
+
+    }
+
+    /*
+        定义计算(0-n)整数和的方法
+        已知:计算整数的和,数据类型已经确定int
+        但是参数的个数不确定,不知道要计算几个整数的和,就可以使用可变参数
+        add(); 就会创建一个长度为0的数组, new int[0]
+        add(10); 就会创建一个长度为1的数组,存储传递来过的参数 new int[]{10};
+        add(10,20); 就会创建一个长度为2的数组,存储传递来过的参数 new int[]{10,20};
+        add(10,20,30,40,50,60,70,80,90,100); 就会创建一个长度为2的数组,存储传递来过的参数 new int[]{10,20,30,40,50,60,70,80,90,100};
+     */
+    public static int add(int...arr){
+        //System.out.println(arr);//[I@2ac1fdc4 底层是一个数组
+        //System.out.println(arr.length);//0,1,2,10
+        //定义一个初始化的变量,记录累加求和
+        int sum = 0;
+        //遍历数组,获取数组中的每一个元素
+        for (int i : arr) {
+            //累加求和
+            sum += i;
+        }
+        //把求和结果返回
+        return sum;
+    }
+
+    //定义一个方法,计算三个int类型整数的和
+    /*public static int add(int a,int b,int c){
+        return a+b+c;
+    }*/
+
+    //定义一个方法,计算两个int类型整数的和
+    /*public static int add(int a,int b){
+        return a+b;
+    }*/
+}
+
+```
+
+### 4.Collections集合工具类
+
+* java.utils.Collections 是集合工具类（不是Collection）
+
+* 操作方法（静态）
+
+  * 给集合添加一些元素
+
+    ```java
+    public static <T> boolean addAll(Collection<T> c, T...elements)
+    ```
+
+  * 打乱集合顺序
+
+    ```java
+    public static void shuffle(List<?> list)
+    ```
+
+  * 给集合中的元素排序1
+
+    ```java
+    public static <T> void sort(List<T> list)
+    ```
+
+    * 注意事项：
+      * 被排序的集合里面存储的元素，必须实现Comparable，重写接口中的方法compareTo定义排序的规则
+      * compareTo方法的返回值int类型，正数为大
+
+  * 给集合中的元素排序2
+
+    ```java
+    public static <T> void sort(List<T> list, Comparator<? super T>)
+    // Comparator是一个接口，可以使用匿名内部类
+    /*
+    Collections.sort(stuList, new Comparator<Student>() {
+    		@Override
+            public int compare(Student o1, Student o2) {
+                int result = o1.getAge() - o2.getAge();
+                if (result==0){
+                   result = o1.getName().charAt(0) - o1.getName().charAt(0);
+                }
+                return result;
+            }
+        });*/
+    ```
+
+    * Comparable和Comparator的区别
+      * Comparable：自己（this）和别人(参数)进行比较，自己需要实现Comparable接口，重写比较的规则comparaTo方法
+      * Comparator：相当于找一个第三方的裁判，比较两个对象
+
+# Map
+
+### 1.Map集合
+
+1. Map集合的特点
+   1. Map集合是一个双列集合，一个元素包含两个值（一个key，一个value）
+   2. Map集合中的元素，key和value的数据类型可以相同，也可以不同
+   3. Map集合中的元素，key是不允许重复的，value是可以重复的
+   4. Map集合中的元素，key和value是一一对应的
+
+### 2.HashMap和LinkedHashMap集合
+
+1. HashMap集合的特点
+   1. java.util.HashMap<k, v>集合 implements Map<k, v> 接口
+   2. HashMap集合底层是哈希表：查询的速度特别的快
+      * JDK1.8之前：数组+单向链表
+      * JDK1.8之后：数组+单向链表/红黑树（链表的长度超过8）：提高查询的速度
+2. LinkedHashMap的特点
+   1. java.util.LinkedHashMap<k, v> 集合 extends HashMap<k, v> 集合
+   2. LinkedHashMap集合的额底层是哈希表+链表（保证迭代顺序）
+   3. LinkedHashMap集合是一个有序的集合，存储元素和取出元素的顺序是一致的
+
+### 3.Map基本方法
+
+1.  添加/修改元素put
+
+   ```java
+   public V put(K key, V value)
+   // 如果key不存在，返回null
+   // 如果key存在，返回对应的value
+   ```
+
+2. 获取元素get
+
+   ```java
+   public V get(Object key)
+   ```
+
+3. 删除元素remove
+
+   ```java
+   public V remove(Object key)
+   ```
+
+4. 包含
+
+   ```java
+   boolean containsValue(Object value)
+   ```
+
+5. 获取Map的所有key
+
+   ```java
+   Set<K> keySet() // keySet方法获取Map中所有的key
+   ```
+
+   ```java
+   
+   
+   import java.util.HashMap;
+   import java.util.Set;
+   
+   
+   public class MainDemo {
+       public static void main(String[] args) {
+           HashMap<String, Object> pp = new HashMap<>();
+   
+           pp.put("name", "小明");
+           pp.put("age", 18);
+           pp.put("height", 60.5);
+   
+           System.out.println(pp);
+   
+           // 遍历
+           Set<String> keys = pp.keySet();
+           for (String key : keys) {
+               Object value = pp.get(key);
+               System.out.println(value);
+           }
+   
+   
+       }
+   }
+   
+   ```
+
+6. 获取Map中多有的Entry对象，Entry对象封装了Map中的键值对
+   1. 方法：
+      *  Set<Map.Entry<K, V>>  entrySet()
+   2. Entry对象提供操作键值对方法
+      * K  getKey()
+      * V  getValue()
+
+7. HashMap存储自定义类型的键值
+   1. HashMap存储自定义类型键值
+   2. Map集合保证key是唯一的:
+      * 作为key的元素,必须重写hashCode方法和equals方法,以保证key唯一
+8. LinkedHashMap<K, V> extends HashMap<K, V>
+   1. Map 接口的哈希表和链接表实现，具有可预知的迭代顺序
+   2. 底层
+      * 哈希表+链表（记录元素的顺序）
+
+9. JDK1.9添加新特性--of方法
+
+   * List接口,Set接口,Map接口:里边增加了一个静态的方法of,可以给集合一次性添加多个元素
+
+   ```java
+   package com.itheima.demo04.JDK9;
+   
+   import java.util.List;
+   import java.util.Map;
+   import java.util.Set;
+   
+   /*
+       JDK9的新特性:
+           List接口,Set接口,Map接口:里边增加了一个静态的方法of,可以给集合一次性添加多个元素
+           static <E> List<E> of.(E... elements)
+           使用前提:
+               当集合中存储的元素的个数已经确定了,不在改变时使用
+        注意:
+           1.of方法只适用于List接口,Set接口,Map接口,不适用于接接口的实现类
+           2.of方法的返回值是一个不能改变的集合,集合不能再使用add,put方法添加元素,会抛出异常
+           3.Set接口和Map接口在调用of方法的时候,不能有重复的元素,否则会抛出异常
+    */
+   public class Demo01JDK9 {
+       public static void main(String[] args) {
+           List<String> list = List.of("a", "b", "a", "c", "d");
+           System.out.println(list);//[a, b, a, c, d]
+           //list.add("w");//UnsupportedOperationException:不支持操作异常
+   
+           //Set<String> set = Set.of("a", "b", "a", "c", "d");//IllegalArgumentException:非法参数异常,有重复的元素
+           Set<String> set = Set.of("a", "b", "c", "d");
+           System.out.println(set);
+           //set.add("w");//UnsupportedOperationException:不支持操作异常
+   
+           //Map<String, Integer> map = Map.of("张三", 18, "李四", 19, "王五", 20,"张三",19);////IllegalArgumentException:非法参数异常,有重复的元素
+           Map<String, Integer> map = Map.of("张三", 18, "李四", 19, "王五", 20);
+           System.out.println(map);//{王五=20, 李四=19, 张三=18}
+           //map.put("赵四",30);//UnsupportedOperationException:不支持操作异常
+       }
+   }
+   
+   ```
+
+   
