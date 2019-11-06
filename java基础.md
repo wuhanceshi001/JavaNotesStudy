@@ -2339,7 +2339,7 @@ public class Demo01VarArgs {
 
 ### 3.Map基本方法
 
-1.  添加/修改元素put
+1. 添加/修改元素put
 
    ```java
    public V put(K key, V value)
@@ -2459,4 +2459,147 @@ public class Demo01VarArgs {
    
    ```
 
-   
+
+# 异常
+
+### 1.异常概念
+
+* 概念
+  * 程序再执行过程中，出现的非正常的情况
+
+* 体系
+
+  * Throwable是错误和异常的超类，有两个子类
+    * Error-错误
+    * Exception-异常
+      * RunTimeException
+
+* 异常的分类
+
+  * java.lang.Throwable - Java语言中所有错误或者异常的超类
+    * Exception-编译期异常，进行编译java程序出现问题
+      * RuntimeException-运行期异常，java程序运行过程出现的问题
+    * Error-错误，程序出现问题
+
+* 异常的处理
+
+  * 直接抛出
+  * try . . . catch
+
+* 异常产生的原理
+
+  ![06_异常的产生过程解析](.\images\06_异常的产生过程解析.bmp)
+
+### 2.异常处理
+
+1. 抛出异常-throw
+
+   * 对于运行时异常，创建异常对象，直接抛出即可
+
+   * 抛出自定义异常关键字 -  throw
+
+   * 注意
+
+     ```java
+     /*
+     throw关键字
+         作用:
+             可以使用throw关键字在指定的方法中抛出指定的异常
+         使用格式:
+             throw new xxxException("异常产生的原因");
+         注意:
+             1.throw关键字必须写在方法的内部
+             2.throw关键字后边new的对象必须是Exception或者Exception的子类对象
+             3.throw关键字抛出指定的异常对象,我们就必须处理这个异常对象
+                 throw关键字后边创建的是RuntimeException或者是 RuntimeException的子类对				象,我们可以不处理,默认交给JVM处理(打印异常对象,中断程序)
+                 throw关键字后边创建的是编译异常(写代码的时候报错),我们就必须处理这个异常,要么				throws,要么try...catch
+     */
+     ```
+
+2. 声明异常，交给别人去处理
+
+   * 使用-throws关键字在方法声明的地方（参数列表）后面声明
+
+   * 语法
+
+     ```java
+     修饰符 返回值类型 方法名(参数列表) throws AAAExcepiton,BBBExcepiton...{
+         throw new AAAExcepiton("产生原因");
+         throw new BBBExcepiton("产生原因");
+         ...
+     }
+     ```
+
+   * 注意事项
+
+     * throws关键字必须写在方法声明处
+     * throws关键字后边声明的异常必须是Exception或者是Exception的子类
+     * 方法内部如果抛出了多个异常对象,那么throws后边必须也声明多个异常
+     * 如果抛出的多个异常对象有子父类关系,那么直接声明父类异常即可
+     * 调用了一个声明抛出异常的方法,我们就必须的处理声明的异常
+       * 要么继续使用throws声明抛出,交给方法的调用者处理,最终交给JVM
+       * 要么try...catch自己处理异常
+
+3. 捕获异常
+
+   * 语法结构
+
+     ```java
+     try{
+         可能产生异常的代码
+     }catch(要捕获的异常类型 e){
+         异常的处理逻辑,异常异常对象之后,怎么处理异常对象
+         一般在工作中,会把异常的信息记录到一个日志中
+     }
+     ... ...
+      catch(异常类名 变量名){
+     	异常处理业务
+         }
+     finally{
+         无论是否出现异常都会执行
+     }
+     ```
+
+   * 注意事项
+
+     * 如果try中产生了异常,那么就会执行catch中的异常处理逻辑,执行完毕catch中的处理逻辑,继续执行try...catch之后的代码
+     * 如果try中没有产生异常,那么就不会执行catch中异常的处理逻辑,执行完try中的代码,继续执行try...catch之后的代码
+     * finally不能单独使用,必须和try一起使用
+     * finally一般用于资源释放(资源回收),无论程序是否出现异常,最后都要资源释放(IO)
+     * finally不建议使用return关键字
+
+   * 异常处理的方法--Throwable类中定义了3个异常处理的方法
+
+     * String getMessage() 返回此 throwable 的简短描述。
+     * String toString() 返回此 throwable 的详细消息字符串。
+     * void printStackTrace()  JVM打印异常对象,默认此方法,打印的异常信息是最全面的
+
+4. 多个异常如何处理
+   * 多个异常分别处理。
+   * 多个异常一次捕获，多次处理。
+   * 多个异常一次捕获一次处理。
+   * 注意：
+     * catch里边定义的异常变量,如果有子父类关系,那么子类的异常变量必须写在上边,否则就会报错
+     * 运行时异常被抛出可以不处理。即不捕获也不声明抛出。
+
+5. **重写方法时-子父类异常**
+   1. 如果父类抛出了多个异常,子类重写父类方法时,抛出和父类相同的异常或者是父类异常的子类或者不抛出异常。
+   2. 父类方法没有抛出异常，子类重写父类该方法时也不可抛出异常。此时子类产生该异常，只能捕获处理，不能声明抛出
+
+### 3.自定义异常
+
+1. 格式
+
+   ```java
+   public class XXXExcepiton extends Exception | RuntimeException{
+       添加一个空参数的构造方法
+           添加一个带异常信息的构造方法
+   }
+   ```
+
+2. 注意
+   1. 自定义异常类一般都是以Exception结尾,说明该类是一个异常类
+   2. **自定义异常类,必须的继承Exception或者RuntimeException**
+      1. 继承Exception:那么自定义的异常类就是一个编译期异常,如果方法内部抛出了编译期异常,就必须处理这个异常,要么throws,要么try...catch
+      2. 继承RuntimeException:那么自定义的异常类就是一个运行期异常,无需处理,交给虚拟机处理(中断处理)
+   3. 在自己捕获异常是，为了避免后续代码继续执行，catch中可以使用return来结束函数
